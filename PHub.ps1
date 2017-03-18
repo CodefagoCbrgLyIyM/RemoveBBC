@@ -1,6 +1,10 @@
 
+#Page url with search tearms
 $pageURL = "http://www.pornhub.com/video/search?search=bbc+interracial&page=";
-$pageCount = 2;
+#Amount of pages to scan
+$pageCount = 5;
+
+
 $xe = New-Object -com "InternetExplorer.Application";
 $xe.visible = $true;
 $xe.silent = $true;
@@ -18,31 +22,24 @@ for($i = 1; $i -le $pageCount; $i++){
     $xe.Stop();
     
 }
-Write-Host $aLinks.Count;
+Write-Host $aLinks.Count "Links found in " $pageCount " pages.";
 $aLinks | ForEach-Object {
     $Link = $_;
     if($Link.HREF -like '*view_video*'){
-        if($Links.Contains(($Link.href)) -eq $false){
+        if(($Links.Contains(($Link.href)) -eq $false) -and ($Link.title -eq $Link.innerText)){
             $Links += , ($Link.href);
-        }
-            #$xe.Navigate($Link);
-            #while ($xe.Busy) {
-            #    [System.Threading.Thread]::Sleep(10)
-            #}
-            #[System.Threading.Thread]::Sleep(3000);
-            #$xe.Document.Script.execScript("document.querySelector('.js-voteDown').click();","JavaScript");
-            #$xe.Stop();
-                
+        }                
     }
 }
+Write-Host $Links.Count " Videos to downvote";
 $Links | ForEach-Object{
-    Write-Host $_;
+    
     $xe.Navigate($_);
     while ($xe.Busy) {
         [System.Threading.Thread]::Sleep(10)
     }
     [System.Threading.Thread]::Sleep(4000);
     $xe.Document.Script.execScript("document.querySelector('.js-voteDown').click();","JavaScript");
+    Write-Host "Downvoted " $_;
 }
-$xe.Navigate("http://Google.com");
-#[System.Runtime.Interopservices.Marshal]::ReleaseComObject($xe)
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($xe);
